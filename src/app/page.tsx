@@ -1,65 +1,176 @@
-import Image from "next/image";
+"use client";
+
+import { InvestmentForm, type InvestmentFormErrors, type InvestmentFormValues } from "@/components/InvestmentForm";
+import { ResultsDisplay } from "@/components/ResultsDisplay";
+import { ReturnsPieChart } from "@/components/ReturnsPieChart";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { calculateReturns } from "@/lib/finance";
+import { formatINR } from "@/lib/format";
+import { useMemo, useState } from "react";
+
+const DEFAULTS: InvestmentFormValues = {
+  principal: "100000",
+  annualRatePct: "12",
+  years: 10,
+  mode: "lumpsum",
+  monthlyInvestment: "5000",
+};
+
+function parseNumber(input: string) {
+  const cleaned = input.replace(/,/g, "").trim();
+  if (!cleaned) return NaN;
+  return Number(cleaned);
+}
+
+function validate(values: InvestmentFormValues): InvestmentFormErrors {
+  const errors: InvestmentFormErrors = {};
+
+  const principal = parseNumber(values.principal);
+  const rate = parseNumber(values.annualRatePct);
+  const years = values.years;
+  const monthly = parseNumber(values.monthlyInvestment);
+
+  if (!Number.isFinite(principal) || principal < 0) {
+    errors.principal = "Enter a valid non-negative amount.";
+  }
+
+  if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
+    errors.annualRatePct = "Enter a rate between 0 and 100.";
+  }
+
+  if (!Number.isFinite(years) || years < 0 || years > 60) {
+    errors.years = "Enter a time period between 0 and 60 years.";
+  }
+
+  if (values.mode === "sip") {
+    if (!Number.isFinite(monthly) || monthly < 0) {
+      errors.monthlyInvestment = "Enter a valid non-negative monthly amount.";
+    }
+  }
+
+  return errors;
+}
 
 export default function Home() {
+  const [values, setValues] = useState<InvestmentFormValues>(DEFAULTS);
+  const errors = useMemo(() => validate(values), [values]);
+  const hasErrors = Object.keys(errors).length > 0;
+
+  const result = useMemo(() => {
+    if (hasErrors) {
+      return { totalInvested: 0, totalValue: 0, estimatedReturns: 0 };
+    }
+
+    return calculateReturns({
+      principal: parseNumber(values.principal),
+      annualRatePct: parseNumber(values.annualRatePct),
+      years: values.years,
+      mode: values.mode,
+      monthlyInvestment:
+        values.mode === "sip" ? parseNumber(values.monthlyInvestment) : undefined,
+    });
+  }, [hasErrors, values]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="min-h-screen bg-[radial-gradient(1200px_circle_at_20%_0%,rgba(14,165,233,0.18),transparent_40%),radial-gradient(900px_circle_at_80%_10%,rgba(34,197,94,0.16),transparent_42%),linear-gradient(to_bottom,rgba(255,255,255,1),rgba(245,245,245,1))] px-4 py-10 transition-colors dark:bg-[radial-gradient(1200px_circle_at_20%_0%,rgba(14,165,233,0.14),transparent_40%),radial-gradient(900px_circle_at_80%_10%,rgba(34,197,94,0.12),transparent_42%),linear-gradient(to_bottom,rgba(7,7,10,1),rgba(0,0,0,1))] sm:px-6">
+      <div className="mx-auto w-full max-w-6xl">
+        <header className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-300">
+              Portfolio-grade • Next.js • Tailwind • Recharts
+            </div>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-4xl">
+              Investment Returns Calculator
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Real-time compound growth using \(A = P(1 + r/100)^t\). Switch to
+              SIP mode to include monthly contributions.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+          </div>
+        </header>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
+            <InvestmentForm values={values} errors={errors} onChange={setValues} />
+
+            <div className="rounded-2xl border border-black/5 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 sm:p-6">
+              <div className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
+                Quick note
+              </div>
+              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                This is an estimate for educational purposes. Markets fluctuate,
+                and actual returns can differ.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                <Pill label="INR formatting" value={formatINR(1234567)} />
+                <Pill label="Real-time updates" value="Enabled" />
+                <Pill
+                  label="Validation"
+                  value={hasErrors ? "Fix inputs" : "All good"}
+                  tone={hasErrors ? "danger" : "success"}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <ResultsDisplay
+              totalInvested={result.totalInvested}
+              estimatedReturns={result.estimatedReturns}
+              totalValue={result.totalValue}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <ReturnsPieChart
+              invested={result.totalInvested}
+              returns={result.estimatedReturns}
+            />
+          </div>
         </div>
-      </main>
+
+        <footer className="mt-10 flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+          <span>
+            Built with Next.js App Router, Tailwind CSS, and Recharts.
+          </span>
+          <span className="tabular-nums">
+            Mode:{" "}
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {values.mode === "sip" ? "SIP" : "Lump sum"}
+            </span>
+          </span>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+function Pill({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  tone?: "neutral" | "success" | "danger";
+}) {
+  const toneClass =
+    tone === "success"
+      ? "border-emerald-300/60 bg-emerald-50 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100"
+      : tone === "danger"
+        ? "border-rose-300/70 bg-rose-50 text-rose-900 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-100"
+        : "border-black/10 bg-white/60 text-zinc-700 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-300";
+
+  return (
+    <div
+      className={[
+        "inline-flex items-center gap-2 rounded-full border px-3 py-1 font-medium transition",
+        toneClass,
+      ].join(" ")}
+    >
+      <span className="opacity-80">{label}</span>
+      <span className="font-semibold">{value}</span>
     </div>
   );
 }

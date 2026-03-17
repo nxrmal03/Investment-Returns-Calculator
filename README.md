@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Investment Returns Calculator (Next.js + React + Tailwind + Recharts)
 
-## Getting Started
+A modern, responsive investment returns calculator built with **Next.js App Router**, **Tailwind CSS**, and **Recharts**. It supports **lump sum** and **SIP (monthly contribution)** modes, real-time calculation, validation, INR formatting, and dark mode.
 
-First, run the development server:
+## Features
+
+- **Inputs**:
+  - Investment amount (₹) / Initial investment (₹)
+  - Expected annual return rate (%)
+  - Time period (years) with **slider**
+  - **SIP mode** with monthly investment (₹)
+- **Outputs**:
+  - Total invested amount
+  - Estimated returns (profit)
+  - Total value (invested + returns)
+- **Visualization**:
+  - Pie chart (Invested vs Returns) with Recharts
+- **UX**:
+  - Responsive, fintech-style UI
+  - Real-time updates
+  - Input validation + friendly error messages
+  - Dark mode (system/light/dark)
+
+## Formulas
+
+### Lump sum (compound interest)
+\[
+A = P(1 + r/100)^t
+\]
+
+### SIP (monthly contribution)
+Uses monthly compounding:
+- Monthly rate: \(i = r/100/12\)
+- Months: \(n = 12t\)
+- Future value of monthly contributions (end of month):
+  - \(FV = PMT \cdot \frac{(1+i)^n - 1}{i}\) (or \(PMT \cdot n\) when \(i = 0\))
+
+## Tech stack / dependencies
+
+- **Next.js** (App Router)
+- **React** (function components + hooks)
+- **TypeScript**
+- **Tailwind CSS**
+- **Recharts**
+- **next-themes** (dark mode)
+
+## Getting started (local)
+
+From the project folder:
+
+```bash
+npm install
+npm run dev
+```
+
+Then open `http://localhost:3000`.
+
+## Scripts
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app/`: Next.js routes + global styles
+- `src/components/`: UI components (`InvestmentForm`, `ResultsDisplay`, `ReturnsPieChart`, theme components)
+- `src/lib/`: calculation + formatting helpers
