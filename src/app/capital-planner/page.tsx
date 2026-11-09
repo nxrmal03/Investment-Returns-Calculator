@@ -1,7 +1,9 @@
 import { CapitalSlotPlanner } from "@/components/CapitalSlotPlanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Capital Slot Planner",
@@ -26,7 +28,26 @@ export default function CapitalPlannerPage() {
               Capital Slot Planner
             </span>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Suspense>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="rounded-lg border border-zinc-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-zinc-600 shadow-sm transition hover:border-blue-400 hover:text-blue-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-blue-500 dark:hover:text-blue-400">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="rounded-lg border border-blue-500 bg-blue-500 px-3 py-2 font-mono text-xs font-semibold text-white shadow-sm transition hover:bg-blue-600">
+                    Sign Up
+                  </button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </Suspense>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

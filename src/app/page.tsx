@@ -4,6 +4,8 @@ import { InvestmentForm, type InvestmentFormErrors, type InvestmentFormValues } 
 import { ResultsDisplay } from "@/components/ResultsDisplay";
 import { ReturnsPieChart } from "@/components/ReturnsPieChart";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { calculateReturns } from "@/lib/finance";
 import { formatINR } from "@/lib/format";
@@ -53,6 +55,7 @@ function validate(values: InvestmentFormValues): InvestmentFormErrors {
 }
 
 export default function Home() {
+  const { isSignedIn } = useAuth();
   const [values, setValues] = useState<InvestmentFormValues>(DEFAULTS);
   const errors = useMemo(() => validate(values), [values]);
   const hasErrors = Object.keys(errors).length > 0;
@@ -96,6 +99,22 @@ export default function Home() {
             >
               Capital Slot Planner →
             </Link>
+            {isSignedIn ? (
+              <UserButton />
+            ) : (
+              <>
+                <SignInButton mode="modal">
+                  <button className="rounded-lg border border-zinc-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-zinc-600 shadow-sm transition hover:border-blue-400 hover:text-blue-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-blue-500 dark:hover:text-blue-400">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="rounded-lg border border-blue-500 bg-blue-500 px-3 py-2 font-mono text-xs font-semibold text-white shadow-sm transition hover:bg-blue-600 dark:border-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400">
+                    Sign Up
+                  </button>
+                </SignUpButton>
+              </>
+            )}
             <ThemeToggle />
           </div>
         </header>
