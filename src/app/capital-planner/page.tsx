@@ -1,6 +1,6 @@
 import { CapitalSlotPlanner } from "@/components/CapitalSlotPlanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -30,7 +30,7 @@ export default function CapitalPlannerPage() {
           </div>
           <div className="flex items-center gap-2">
             <Suspense>
-              <SignedOut>
+              <Show when="signed-out">
                 <SignInButton mode="modal">
                   <button className="rounded-lg border border-zinc-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-zinc-600 shadow-sm transition hover:border-blue-400 hover:text-blue-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-blue-500 dark:hover:text-blue-400">
                     Sign In
@@ -41,10 +41,10 @@ export default function CapitalPlannerPage() {
                     Sign Up
                   </button>
                 </SignUpButton>
-              </SignedOut>
-              <SignedIn>
+              </Show>
+              <Show when="signed-in">
                 <UserButton />
-              </SignedIn>
+              </Show>
             </Suspense>
             <ThemeToggle />
           </div>
