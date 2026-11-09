@@ -3,8 +3,6 @@
 import { useState, useMemo } from "react";
 
 const SLOTS = 10;
-const RISK_PCT = 0.10;
-const TARGET_PCT = 0.50;
 
 function fmtINR(n: number): string {
   if (n >= 10_000_000) return "₹" + (n / 10_000_000).toFixed(2) + " Cr";
@@ -29,10 +27,12 @@ const QUICK_SETS = [
 export function CapitalSlotPlanner() {
   const [capital, setCapital] = useState(1_000_000);
   const [raw, setRaw] = useState("1000000");
+  const [riskPct, setRiskPct] = useState(10);
+  const [targetPct, setTargetPct] = useState(50);
 
   const perSlot   = capital / SLOTS;
-  const riskAmt   = perSlot * RISK_PCT;
-  const targetAmt = perSlot * TARGET_PCT;
+  const riskAmt   = perSlot * (riskPct / 100);
+  const targetAmt = perSlot * (targetPct / 100);
   const maxProfit = targetAmt * SLOTS;
 
   const minWins = useMemo(() => {
@@ -69,7 +69,7 @@ export function CapitalSlotPlanner() {
           Capital Slot Planner
         </h1>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          10-slot equal allocation · 10% risk per slot · 50% target per trade · R:R 1:5
+          10-slot equal allocation · {riskPct}% risk per slot · {targetPct}% target per trade · R:R 1:{(targetPct / riskPct).toFixed(1)}
         </p>
       </div>
 
@@ -88,6 +88,38 @@ export function CapitalSlotPlanner() {
                 onChange={e => handleInput(e.target.value)}
                 className="w-48 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xl font-semibold text-zinc-900 outline-none transition focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="font-mono text-xs font-semibold uppercase tracking-widest text-zinc-400">
+              Risk %
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={riskPct}
+                onChange={e => setRiskPct(Math.min(100, Math.max(0, Number(e.target.value))))}
+                className="w-20 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xl font-semibold text-red-500 outline-none transition focus:border-red-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-red-400"
+              />
+              <span className="font-mono text-xl font-semibold text-zinc-400">%</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="font-mono text-xs font-semibold uppercase tracking-widest text-zinc-400">
+              Target %
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                max={1000}
+                value={targetPct}
+                onChange={e => setTargetPct(Math.max(0, Number(e.target.value)))}
+                className="w-20 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xl font-semibold text-emerald-500 outline-none transition focus:border-emerald-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-emerald-400"
+              />
+              <span className="font-mono text-xl font-semibold text-zinc-400">%</span>
             </div>
           </div>
           <div className="space-y-2">
@@ -129,8 +161,8 @@ export function CapitalSlotPlanner() {
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-zinc-400">10 Trade Slots</h2>
           <div className="flex gap-4 text-xs text-zinc-400">
-            <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-red-500" />Risk 10%</span>
-            <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />Target 50%</span>
+            <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-red-500" />Risk {riskPct}%</span>
+            <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />Target {targetPct}%</span>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -160,7 +192,7 @@ export function CapitalSlotPlanner() {
                 </div>
               </div>
               <div className="mt-3 rounded bg-emerald-500/10 py-1 text-center font-mono text-xs font-semibold text-emerald-500">
-                R:R = 1 : 5
+                R:R = 1 : {(targetPct / riskPct).toFixed(1)}
               </div>
             </div>
           ))}
@@ -257,8 +289,8 @@ export function CapitalSlotPlanner() {
       <hr className="border-zinc-200 dark:border-zinc-800" />
 
       <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-xs text-yellow-700 dark:border-yellow-900/40 dark:bg-yellow-900/10 dark:text-yellow-400">
-        ⚠ Risk is capped at <strong>10%</strong> of each slot&apos;s capital. The reward-to-risk ratio is{" "}
-        <strong>5:1</strong> — for every rupee risked, the target is five. For educational and planning purposes only.
+        ⚠ Risk is set at <strong>{riskPct}%</strong> of each slot&apos;s capital. The reward-to-risk ratio is{" "}
+        <strong>{(targetPct / riskPct).toFixed(1)}:1</strong> — for every rupee risked, the target is {(targetPct / riskPct).toFixed(1)}x. For educational and planning purposes only.
       </div>
 
     </div>
